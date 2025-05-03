@@ -2,245 +2,224 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>stockbot test</title>
+  <title>Stockbot Simulation</title>
   <style>
     :root {
-      --bg-light: #f5f5f5;
-      --bg-dark: #111;
-      --text-light: #222;
-      --text-dark: #eee;
-      --accent: #2b8fe9;
+      --bg: #f4f4f4;
+      --fg: #111;
+      --panel: #fff;
+      --card: #eaeaea;
+      --accent-strong: #007bff;
+      --font-size: 14px;
     }
-
-    html {
-      font-size: 16px;
+    [data-theme="dark"] {
+      --bg: #121212;
+      --fg: #eee;
+      --panel: #1e1e1e;
+      --card: #2a2a2a;
+      --accent-strong: #1faaff;
+      --font-size: 16px;
     }
-
     body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background-color: var(--bg-light);
-      color: var(--text-light);
-      transition: all 0.3s;
+      padding: 20px;
+      font-size: var(--font-size);
     }
-
-    body.dark {
-      background-color: var(--bg-dark);
-      color: var(--text-dark);
-    }
-
-    header {
-      background-color: var(--accent);
-      color: white;
-      padding: 1rem 2rem;
+    h1 {
+      margin: 0 0 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1.25rem;
+      font-size: 24px;
     }
-
-    .container {
-      padding: 2rem;
-      max-width: 1000px;
-      margin: auto;
-    }
-
-    .dashboard {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      font-size: 1rem;
-      transition: all 0.3s;
-    }
-
-    body.dark .card {
-      background: #1e1e1e;
-    }
-
-    input, button {
-      font-size: 1rem;
-    }
-
-    input {
-      padding: 0.4rem;
-      margin-bottom: 1rem;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    button {
-      padding: 0.6rem 1rem;
-      background: var(--accent);
+    #theme-toggle {
+      padding: 6px 12px;
+      background: var(--accent-strong);
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
     }
-
-    #log {
-      background: #eee;
-      color: #222;
-      padding: 1rem;
+    #controls {
+      background: var(--panel);
+      padding: 20px;
       border-radius: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 900px;
+    }
+    label { margin-right: 4px; }
+    input, button {
+      padding: 6px 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+    }
+    button { background: var(--accent-strong); color: white; cursor: pointer; }
+    #console {
+      background: var(--panel);
+      padding: 20px;
+      height: 350px;
+      overflow-y: scroll;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 13px;
+      white-space: pre-wrap;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px #0003;
+      margin-bottom: 20px;
     }
-
-    body.dark #log {
-      background: #222;
-      color: #ddd;
+    #stats {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
-
-    .stat {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+    .card {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      flex: 1 1 220px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-
-    .toggle-mode {
-      cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.2);
-      font-size: 0.9rem;
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: var(--accent-strong);
+    }
+    .card p {
+      margin: 0;
+      font-size: 20px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>StockBot Based Market Testing</h1>
-    <div class="toggle-mode" onclick="toggleMode()">Toggle Mode</div>
-  </header>
+  <h1>
+    Stockbot Simulation
+    <button id="theme-toggle">Toggle Theme</button>
+  </h1>
 
-  <div class="container">
-    <div class="dashboard">
-      <div class="card">
-        <label>Stock Symbol:</label>
-        <input type="text" id="stock-symbol" value="BTC">
-        <label>Starting Cash:</label>
-        <input type="number" id="starting-cash" value="40" min="1">
-        <button onclick="fetchData()">Start Simulation</button>
-      </div>
-
-      <div class="card">
-        <div class="stat" id="net-gain">Net Gain: $0.00</div>
-        <div class="stat" id="final-value">Final Value: $0.00</div>
-        <div class="stat" id="trade-income">Trade Income: $0.00</div>
-        <div class="stat" id="total-spent">Total Spent: $0.00</div>
-      </div>
+  <div id="controls">
+    <div>
+      <label for="symbol">Stock Symbol:</label>
+      <input type="text" id="symbol" value="BTC">
     </div>
 
-    <div id="log" class="card" style="grid-column: span 2;"></div>
+    <div>
+      <label for="cash">Starting Cash: $</label>
+      <input type="number" id="cash" value="40" min="1">
+    </div>
+
+    <button onclick="start()">Run 1-Day Test</button>
+  </div>
+
+  <div id="console">[ Ready… ]</div>
+
+  <div id="stats">
+    <div class="card"><h3>Net Gain</h3><p id="stat-net">—</p></div>
+    <div class="card"><h3>Final Value</h3><p id="stat-value">—</p></div>
+    <div class="card"><h3>Trade Income</h3><p id="stat-income">—</p></div>
+    <div class="card"><h3>Total Spent</h3><p id="stat-spent">—</p></div>
   </div>
 
   <script>
-    const logEl = document.getElementById("log");
+    const consoleDiv = document.getElementById("console");
+    const log = msg => {
+      consoleDiv.textContent += msg + "\n";
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    };
 
-    function log(msg) {
-      logEl.textContent += msg + "\n";
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+    const stats = {
+      net: document.getElementById("stat-net"),
+      value: document.getElementById("stat-value"),
+      income: document.getElementById("stat-income"),
+      spent: document.getElementById("stat-spent"),
+    };
 
-    function updateStats(net, final, income, spent) {
-      document.getElementById("net-gain").textContent = `Net Gain: $${net.toFixed(2)}`;
-      document.getElementById("final-value").textContent = `Final Value: $${final.toFixed(2)}`;
-      document.getElementById("trade-income").textContent = `Trade Income: $${income.toFixed(2)}`;
-      document.getElementById("total-spent").textContent = `Total Spent: $${spent.toFixed(2)}`;
-    }
-
-    async function fetchData() {
-      const symbol = document.getElementById("stock-symbol").value.toUpperCase();
-      const startingCash = parseFloat(document.getElementById("starting-cash").value);
-      log(`Fetching 1-day history for ${symbol}...`);
+    async function start() {
+      consoleDiv.textContent = "[ Fetching 1-day history… ]";
+      const symbol = document.getElementById("symbol").value.toUpperCase();
+      const startingCash = parseFloat(document.getElementById("cash").value);
       const url = `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1d&interval=1m`;
 
       try {
         const res = await fetch(url);
         const data = await res.json();
+        const ts = data.chart.result[0].timestamp;
+        const cl = data.chart.result[0].indicators.quote[0].close;
+        const entries = ts.map((t,i) => ({
+          time: new Date(t*1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+          price: cl[i]
+        })).filter(e=>e.price);
 
-        const timestamps = data.chart.result[0].timestamp;
-        const prices = data.chart.result[0].indicators.quote[0].close;
-
-        const entries = timestamps.map((t, i) => ({
-          timestamp: new Date(t * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          price: prices[i]
-        })).filter(e => e.price);
-
-        simulateTrading(entries, startingCash);
-      } catch (err) {
-        log("Error fetching data: " + err);
+        simulate(entries, startingCash);
+      } catch (e) {
+        log("Error fetching data: " + e.message);
       }
     }
 
-    function simulateTrading(data, startingCash) {
-      let cash = startingCash, shares = 0, buyPrice = 0, income = 0, spent = 0;
-      const lookback = 3;
+function simulate(data, startCash) {
+  let cash = startCash, shares = 0, boughtAt = 0, income = 0, spent = 0;
+  const initialPrice = data[0].price;
 
-      for (let i = lookback; i < data.length; i++) {
-        const current = data[i], prev = data[i - 1];
-        const trend = data.slice(i - lookback, i).map(p => p.price);
-        const rising = trend.every((val, idx, arr) => idx === 0 || val > arr[idx - 1]);
+  for (let i = 1; i < data.length; i++) {
+    const cur = data[i], prev = data[i - 1];
 
-        if (rising && cash > 0) {
-          buyPrice = current.price;
-          shares = cash / current.price;
-          spent += cash;
-          log(`[${current.timestamp}] BUY at $${buyPrice.toFixed(2)} | Shares: ${shares.toFixed(4)} | Spent: $${cash.toFixed(2)}`);
-          cash = 0;
-        }
-
-        if (shares > 0 && current.price < prev.price) {
-          const sellPrice = current.price;
-          cash = shares * sellPrice;
-          const profit = (sellPrice - buyPrice) * shares;
-          income += profit;
-          log(`[${current.timestamp}] SELL at $${sellPrice.toFixed(2)} | Profit: $${profit.toFixed(2)} | Total Income: $${income.toFixed(2)}`);
-          shares = 0;
-        } else {
-          log(`[${current.timestamp}] HOLD at $${current.price.toFixed(2)}`);
-        }
-      }
-
-      const finalPrice = data[data.length - 1].price;
-      const finalValue = cash + shares * finalPrice;
-      const net = finalValue - startingCash;
-
-      log(`\n=== FINAL VALUE: $${finalValue.toFixed(2)} | Net Gain: $${net.toFixed(2)} | Trade Income: $${income.toFixed(2)} ===`);
-      log(`Total Spent: $${spent.toFixed(2)}`);
-      updateStats(net, finalValue, income, spent);
+    // BUY: Price is below initial and no shares held
+    if (shares === 0 && cash > 0 && cur.price < initialPrice) {
+      shares = cash / cur.price;
+      boughtAt = cur.price;
+      spent += cash;
+      log(`[${cur.time}] BUY @ $${cur.price.toFixed(2)} | Shares: ${shares.toFixed(4)}`);
+      cash = 0;
     }
 
-    function toggleMode() {
-      const dark = document.body.classList.toggle("dark");
-      localStorage.setItem("darkMode", dark ? "true" : "false");
+    // SELL: Price above initial and just started to drop
+    else if (shares > 0 && cur.price > initialPrice && cur.price < prev.price) {
+      cash = shares * cur.price;
+      const profit = (cur.price - boughtAt) * shares;
+      income += profit;
+      log(`[${cur.time}] SELL @ $${cur.price.toFixed(2)} | Profit: $${profit.toFixed(2)}`);
+      shares = 0;
     }
 
-    window.onload = () => {
-      if (localStorage.getItem("darkMode") === "true") {
-        document.body.classList.add("dark");
-      }
+    // HOLD: Still holding and conditions not met to sell
+    else if (shares > 0) {
+      log(`[${cur.time}] HOLD @ $${cur.price.toFixed(2)}`);
+    }
+  }
+
+  const lastPrice = data[data.length - 1].price;
+  const finalVal = cash + shares * lastPrice;
+  const net = finalVal - startCash;
+
+  log(`\n=== FINAL VALUE: $${finalVal.toFixed(2)} | NET GAIN: $${net.toFixed(2)} | INCOME: $${income.toFixed(2)} | SPENT: $${spent.toFixed(2)} ===`);
+
+  stats.net.textContent    = `$${net.toFixed(2)}`;
+  stats.value.textContent  = `$${finalVal.toFixed(2)}`;
+  stats.income.textContent = `$${income.toFixed(2)}`;
+  stats.spent.textContent  = `$${spent.toFixed(2)}`;
+}
+
+
+
+
+    // Theme toggle
+    const themeBtn = document.getElementById("theme-toggle");
+    themeBtn.onclick = () => {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
     };
+    document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "light");
   </script>
-<script>
-  window.addEventListener('load', () => {
-    const styleLockElements = document.querySelectorAll('body, input, button, label, #log, .card');
-    styleLockElements.forEach(el => {
-      const computed = getComputedStyle(el);
-      el.style.fontSize = computed.fontSize;
-      el.style.fontFamily = computed.fontFamily;
-      el.style.lineHeight = computed.lineHeight;
-    });
-  });
-</script>
 </body>
 </html>
